@@ -55,18 +55,22 @@ class ArtificialBeeColony:
         
         # Compare solution with previous solution
         # TODO: Measure whether or not this solution is "stagnating", probably by incrementing a counter somewhere some place.
-        if mutated_solution[-1] > solution[-1]:
+        if mutated_solution[-1] < solution[-1]:
             return mutated_solution
         return solution
 
     # Probibalistically select an id for a solution
     def pick_source_index(self, solutions):
-        # first calculate the weights of every solution
-        # Pick a random solution based on the weights
-        total = np.sum(solutions[:, -1])
-        weights = solutions[:, -1] / total
 
-        # Select random index
+        # This method requries all function values to be > 0 and thus the lowest value is found to try and create a 0 .. n result space
+        f_x = solutions[:, -1]
+        f_x_scaled = f_x + abs(np.min(f_x))
+
+        # Calculate the weights of every solution
+        total = np.sum(f_x_scaled)
+        weights = f_x_scaled / total
+
+        # Pick a random solution based on the weights
         return np.random.choice(np.arange(start=0, stop=len(solutions)), p=weights)
 
     # Randomly find a new solution
