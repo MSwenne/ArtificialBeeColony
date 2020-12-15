@@ -5,7 +5,7 @@ from multiprocessing import Pool
 
 # Generates results for a singular configuration
 def experiment(configuration):
-    problem_id = range(1, 25)
+    problem_id = range(1, 2)
     instance_id = range(1, 26)
     dimension = [2, 5, 20]
 
@@ -26,5 +26,5 @@ if __name__ == '__main__':
     # Launch all configurations in parallel
     # with Pool() as p:
     #     p.map(experiment, configurations)
-    configuration = [10000, 50, 50, 2, 10]
+    configuration = [10_000, 50, 50, 2, 20]
     experiment(configuration)
