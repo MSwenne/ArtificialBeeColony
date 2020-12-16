@@ -67,15 +67,13 @@ class ArtificialBeeColony:
         # k in {0 .. employeed bees}
         # j in {0 .. dimension}
         # vij = solution[j] + U(-1, 1)(solution[j] − solutions[k][j])
-        mutate_j = np.random.uniform(low=0, high=len(solution) - 1) # -1 because we don't want performance to be mutated
-        mutate_k = np.random.uniform(low=0, high=len(solutions)) # Random sample from existing mutations
+        mutate_j = np.random.randint(low=0, high=len(solution) - 1) # -1 because we don't want performance to be mutated
+        mutate_k = np.random.randint(low=0, high=len(solutions)) # Random sample from existing mutations
         mutation_factor = np.random.uniform(low=-1, high=1)
-
-        mutation = mutation_factor * (solution[mutate_j] - solutions[mutate_k][mutate_j])
+        mutation = solution[mutate_j] + mutation_factor * (solution[mutate_j] - solutions[mutate_k][mutate_j])
         # Make sure the new variable is between -5 and 5
         mutated_solution[mutate_j] = max(-5, min(5, mutated_solution[mutate_j] + mutation))
         mutated_solution = self.evaluate(problem, mutated_solution)
-
         # Compare solution with previous solution
         # TODO: Measure whether or not this solution is "stagnating", probably by incrementing a counter somewhere some place.
         if mutated_solution[-1] <= solution[-1]:
