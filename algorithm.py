@@ -17,43 +17,40 @@ class ArtificialBeeColony:
 
         # Generate initial solutions
         solutions = np.array([self.scout_solution(problem) for _ in range(self.n_employed)])
-        print(solutions.shape)
 
         while not problem.final_target_hit and problem.evaluations < self.budget:
             # send employed bees (exploit existing solutions)
-            solutions = np.array([self.exploit(problem, solution, solutions)[0] for solution in solutions])
+            solutions = np.array([self.exploit(problem, solution, solutions) for solution in solutions])
             # For every onlooker, pick a weighted random source
             onlooker_picks = np.array([self.pick_source_index(solutions) for _ in range(self.n_onlookers)])
             # Some indices will remain unchanged as these were appearantly not that interesting
             # Some will get multiple changes, which is why this has to be a synchronous process
             for i in onlooker_picks:
-                found = False
-                scouting = 0
-                # Onlooker bees try to improve a chosen food source within a number(limit) of cycles
-                for _ in range(self.limit):
-                    new_solution, found = self.exploit(problem, solutions[i], solutions)
-                    # If an improvement is found, stop searching
-                    if found:
-                        solutions[i] = new_solution
-                        break
-                # If an improvement is not found and there are scouts available, send scouts
-                if not found and scouting < self.n_scouts:
-                    solutions[i] = self.scout_solution(problem)
-                    scouting += 1
+                solutions[i] = self.exploit(problem, solutions[i], solutions)
+
+            for _ in range(self.n_scouts):
+                # Find the stalest solution in the space
+                max_i = np.argmax(solutions[:, -2])
+                # Replace this problem with a new one
+                if solutions[max_i, -2] >= self.limit:
+                    solutions[max_i] = self.scout_solution(problem)
 
         return self.global_best, self.global_best_f
 
     # Randomly find a new solution
     def scout_solution(self, problem):
-        solution = np.random.uniform(low=-5, high=5, size=problem.number_of_variables + 1)
+        # + 2 for staleness and performance of the solution
+        solution = np.random.uniform(low=-5, high=5, size=problem.number_of_variables + 2)
+        # Set staleness to 0
+        solution[-2] = 0
         return self.evaluate(problem, solution)
 
     # Evaluate a single solution
     def evaluate(self, problem, solution):
-        solution[-1] = problem(solution[:-1])
+        solution[-1] = problem(solution[:-2])
         if solution[-1] < self.global_best_f:
             self.global_best_f = solution[-1]
-            self.global_best = solution[:-1]
+            self.global_best = solution[:-2]
         return solution
 
     # Exploit a solution and return it.
@@ -67,7 +64,7 @@ class ArtificialBeeColony:
         # k in {0 .. employeed bees}
         # j in {0 .. dimension}
         # vij = solution[j] + U(-1, 1)(solution[j] − solutions[k][j])
-        mutate_j = np.random.randint(low=0, high=len(solution) - 1) # -1 because we don't want performance to be mutated
+        mutate_j = np.random.randint(low=0, high=len(solution) - 2) # -2 because we don't want performance / staleness to be mutated
         mutate_k = np.random.randint(low=0, high=len(solutions)) # Random sample from existing mutations
         mutation_factor = np.random.uniform(low=-1, high=1)
         mutation = solution[mutate_j] + mutation_factor * (solution[mutate_j] - solutions[mutate_k][mutate_j])
@@ -75,10 +72,13 @@ class ArtificialBeeColony:
         mutated_solution[mutate_j] = max(-5, min(5, mutated_solution[mutate_j] + mutation))
         mutated_solution = self.evaluate(problem, mutated_solution)
         # Compare solution with previous solution
-        # TODO: Measure whether or not this solution is "stagnating", probably by incrementing a counter somewhere some place.
         if mutated_solution[-1] <= solution[-1]:
-            return mutated_solution, True
-        return solution, False
+            # Reset staleness counter since this is a new solution
+            mutated_solution[-2] = 0
+            return mutated_solution
+        # Increment staleness counter
+        solution[-2] += 1
+        return solution
 
     # Probibalistically select an id for a solution
     def pick_source_index(self, solutions):

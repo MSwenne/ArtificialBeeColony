@@ -5,8 +5,9 @@ from multiprocessing import Pool
 
 # Generates results for a singular configuration
 def experiment(configuration):
+    iterations = 25
     problem_id = range(1, 2)
-    instance_id = range(1, 26)
+    instance_id = range(1, iterations + 1)
     dimension = [2, 5, 20]
 
     logger = IOH_logger("./", f"result-{', '.join(map(str, configuration))}", f"abc-{', '.join(map(str, configuration))}", f"abc-{', '.join(map(str, configuration))}")
@@ -19,6 +20,7 @@ def experiment(configuration):
                 f.add_logger(logger)
                 abc = ArtificialBeeColony(configuration)
                 xopt, fopt = abc.optimize(f)
+                print(f'Problem: {p_id} dim: {d} iteration: {i_id}/{iterations} after: {f.evaluations}')
     logger.clear_logger()
 
 
@@ -26,5 +28,5 @@ if __name__ == '__main__':
     # Launch all configurations in parallel
     # with Pool() as p:
     #     p.map(experiment, configurations)
-    configuration = [10_000, 50, 50, 2, 20]
+    configuration = [102_000, 62, 62, 1, 500]
     experiment(configuration)
