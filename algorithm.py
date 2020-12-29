@@ -13,12 +13,13 @@ class ArtificialBeeColony:
     def optimize(self, problem):
         self.dimension = problem.number_of_variables
         self.global_best = None
-        self.global_best_f = -sys.maxsize
+        self.global_best_f = sys.maxsize
 
         # Generate initial solutions
         solutions = np.array([self.scout_solution(problem) for _ in range(self.n_employed)])
-
+        i = 0
         while not problem.final_target_hit and problem.evaluations < self.budget:
+            i+=1
             # send employed bees (exploit existing solutions)
             solutions = np.array([self.exploit(problem, solution, solutions) for solution in solutions])
             # For every onlooker, pick a weighted random source
@@ -34,7 +35,8 @@ class ArtificialBeeColony:
                 # Replace this problem with a new one
                 if solutions[max_i, -2] >= self.limit:
                     solutions[max_i] = self.scout_solution(problem)
-
+            if i % 50 == 0:
+                print(self.global_best_f)
         return self.global_best, self.global_best_f
 
     # Randomly find a new solution

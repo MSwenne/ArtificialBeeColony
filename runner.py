@@ -4,14 +4,15 @@ from algorithm import ArtificialBeeColony
 from multiprocessing import Pool, cpu_count
 import time
 import Ackly
+start = time.time()
 
 # Generates results for a singular configuration
 def experiment(configuration):
-    iterations = 30
+    iterations = 1
     problem_id = [19, 24, 9, -1, 20] # Griewank, Rastrigin, Rosenbrock, Ackley, Schwefel (as used in the paper)
-    problem_id = range(1, 2)
+    # problem_id = range(1, 2)
     instance_id = range(1, iterations + 1)
-    dimension = [10, 20, 30]
+    dimension = [10]
 
     logger = IOH_logger("./", f"result-{', '.join(map(str, configuration))}", f"abc-{', '.join(map(str, configuration))}", f"abc-{', '.join(map(str, configuration))}")
     for p_id in problem_id:
@@ -27,17 +28,16 @@ def experiment(configuration):
                 f.add_logger(logger)
                 abc = ArtificialBeeColony(configuration)
                 xopt, fopt = abc.optimize(f)
-                print(f'\tProblem: {p_id} dim: {d} iteration: {i_id}/{iterations} after: {f.evaluations}')
-            print(f"Finished configuration {', '.join(map(str, configuration))}, problem: {p_id}, dim: {d} at:", time.time() - start)
+                print(f'\tProblem: {p_id} dim: {d} iteration: {i_id}/{iterations} after: {f.evaluations}\n\t\tBest fitness: {fopt}')
+            # print(f"Finished configuration {', '.join(map(str, configuration))}, problem: {p_id}, dim: {d} at:", time.time() - start)
     logger.clear_logger()
 
 
 if __name__ == '__main__':
-    start = time.time()
     # Launch all configurations in parallel
-    iterations = [500, 750, 1000]
+    iterations = [500]
     population = 125
-    limit = 500
+    limit = 5000
     # nr_evals, nr_employed, nr_onlookers, nr_scouts, limit
     configurations = [[iter*population, int((population-1)/2), int((population-1)/2), 1, limit] for iter in iterations]
 
