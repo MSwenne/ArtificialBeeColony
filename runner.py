@@ -2,6 +2,8 @@ from IOHexperimenter import IOH_function, IOH_logger, IOHexperimenter
 from algorithm import ArtificialBeeColony
 from multiprocessing import Pool
 
+# import Ackly
+# f = Ackly.IOH_Ackley().func(d, i_id)
 
 # Generates results for a singular configuration
 def experiment(configuration):
