@@ -1,16 +1,14 @@
 from IOHexperimenter import IOH_function, IOH_logger, IOHexperimenter
+from IOHexperimenter.IOHprofiler import IOHprofiler_Problem_double
 from algorithm import ArtificialBeeColony
 from multiprocessing import Pool, cpu_count
 import time
-start = time.time()
-
-# import Ackly
-# f = Ackly.IOH_Ackley().func(d, i_id)
+import Ackly
 
 # Generates results for a singular configuration
 def experiment(configuration):
     iterations = 30
-    problem_id = [19, 24, 9, '''TODO, add Ackley''', 20] # Griewank, Rastrigin, Rosenbrock, Ackley, Schwefel (as used in the paper)
+    problem_id = [19, 24, 9, -1, 20] # Griewank, Rastrigin, Rosenbrock, Ackley, Schwefel (as used in the paper)
     problem_id = range(1, 2)
     instance_id = range(1, iterations + 1)
     dimension = [10, 20, 30]
@@ -21,7 +19,11 @@ def experiment(configuration):
             print(f"configuration: {', '.join(map(str, configuration))}, problem: {p_id}, dim: {d}")
             for i_id in instance_id:
                 # Getting the problem with corresponding id,dimension, and instance.
-                f = IOH_function(p_id, d, i_id, suite="BBOB")
+                if p_id != -1:
+                    f = IOH_function(p_id, d, i_id, suite="BBOB")
+                else:
+                    f = Ackly.IOH_Ackley().func(d, i_id)
+
                 f.add_logger(logger)
                 abc = ArtificialBeeColony(configuration)
                 xopt, fopt = abc.optimize(f)
@@ -31,6 +33,7 @@ def experiment(configuration):
 
 
 if __name__ == '__main__':
+    start = time.time()
     # Launch all configurations in parallel
     iterations = [500, 750, 1000]
     population = 125
