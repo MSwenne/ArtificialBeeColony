@@ -17,9 +17,7 @@ class ArtificialBeeColony:
 
         # Generate initial solutions
         solutions = np.array([self.scout_solution(problem) for _ in range(self.n_employed)])
-        i = 0
         while not problem.final_target_hit and problem.evaluations < self.budget:
-            i+=1
             # send employed bees (exploit existing solutions)
             solutions = np.array([self.exploit(problem, solution, solutions) for solution in solutions])
             # For every onlooker, pick a weighted random source
@@ -35,8 +33,6 @@ class ArtificialBeeColony:
                 # Replace this problem with a new one
                 if solutions[max_i, -2] >= self.limit:
                     solutions[max_i] = self.scout_solution(problem)
-            if i % 50 == 0:
-                print(self.global_best_f)
         return self.global_best, self.global_best_f
 
     # Randomly find a new solution
@@ -50,6 +46,7 @@ class ArtificialBeeColony:
     # Evaluate a single solution
     def evaluate(self, problem, solution):
         solution[-1] = problem(solution[:-2])
+        solution[-1] -= problem.get_target()
         if solution[-1] < self.global_best_f:
             self.global_best_f = solution[-1]
             self.global_best = solution[:-2]
@@ -86,9 +83,10 @@ class ArtificialBeeColony:
     def pick_source_index(self, solutions):
         # This method requries all function values to be > 0 and thus the lowest value is found to try and create a 0 .. n result space
         f_x = solutions[:, -1]
-        f_x_scaled = f_x + abs(np.min(f_x))
+        f_x_scaled = 1.0 / f_x
         # Calculate the weights of every solution
         total = np.sum(f_x_scaled)
-        weights = f_x_scaled / total
+        weights = f_x_scaled / total # Weights = percentage that a solution is picked, these should however be inverted
+
         # Pick a random solution based on the weights
         return np.random.choice(np.arange(start=0, stop=len(solutions)), p=weights)
