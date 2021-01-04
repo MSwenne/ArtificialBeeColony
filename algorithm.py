@@ -2,12 +2,13 @@ import numpy as np
 import sys
 
 class ArtificialBeeColony:
-    def __init__(self, hyperparameters):
+    def __init__(self, hyperparameters, domain):
         self.budget = hyperparameters[0]
         self.n_employed = hyperparameters[1]
         self.n_onlookers = hyperparameters[2]
         self.n_scouts = hyperparameters[3]
         self.limit = hyperparameters[4]
+        self.d_lower, self.d_upper = domain
 
     # Main function call, optimized a given IOH profiler problem
     def optimize(self, problem):
@@ -38,7 +39,7 @@ class ArtificialBeeColony:
     # Randomly find a new solution
     def scout_solution(self, problem):
         # + 2 for staleness and performance of the solution
-        solution = np.random.uniform(low=-5, high=5, size=problem.number_of_variables + 2)
+        solution = np.random.uniform(low=self.d_lower, high=self.d_upper, size=problem.number_of_variables + 2)
         # Set staleness to 0
         solution[-2] = 0
         return self.evaluate(problem, solution)
@@ -68,7 +69,7 @@ class ArtificialBeeColony:
         mutation_factor = np.random.uniform(low=-1, high=1)
         mutation = solution[mutate_j] + mutation_factor * (solution[mutate_j] - solutions[mutate_k][mutate_j])
         # Make sure the new variable is between -5 and 5
-        mutated_solution[mutate_j] = max(-5, min(5, mutated_solution[mutate_j] + mutation))
+        mutated_solution[mutate_j] = max(self.d_lower, min(self.d_upper, mutated_solution[mutate_j] + mutation))
         mutated_solution = self.evaluate(problem, mutated_solution)
         # Compare solution with previous solution
         if mutated_solution[-1] <= solution[-1]:

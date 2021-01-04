@@ -1,15 +1,24 @@
 from IOHexperimenter import IOH_function, IOH_logger, IOHexperimenter
 from IOHexperimenter.IOHprofiler import IOHprofiler_Problem_double
+from numpy.core.numeric import ComplexWarning
 from algorithm import ArtificialBeeColony
 from multiprocessing import Pool, cpu_count
 import time
-import Ackly
+import CustomFunctions
 start = time.time()
 
 # Generates results for a singular configuration
 def experiment(configuration):
+    custom = {
+        -1: CustomFunctions.IOH_Griewank,
+        -2: CustomFunctions.IOH_Rastrigin,
+        -3: CustomFunctions.IOH_Rosenbrock,
+        -4: CustomFunctions.IOH_Ackley,
+        -5: CustomFunctions.IOH_Schwefel
+    }
+
     iterations = 30
-    problem_id = [19, 24, 9, -1, 20] # Griewank, Rastrigin, Rosenbrock, Ackley, Schwefel (as used in the paper)
+    problem_id = [-1, -2, -3, -4, -5] # Griewank, Rastrigin, Rosenbrock, Ackley, Schwefel (as used in the paper)
     instance_id = range(1, iterations + 1)
 
     logger = IOH_logger("./", f"result-{', '.join(map(str, configuration))}", f"abc-{', '.join(map(str, configuration))}", f"abc-{', '.join(map(str, configuration))}")
@@ -17,15 +26,17 @@ def experiment(configuration):
         print(f"configuration: {', '.join(map(str, configuration))}, problem: {p_id}, dim: {configuration[-1]}")
         for i_id in instance_id:
             # Getting the problem with corresponding id, dimension, and instance.
-            if p_id != -1:
+            if p_id >= 0:
                 f = IOH_function(p_id, configuration[-1], i_id, suite="BBOB")
+                domain = (-5, 5)
             else:
-                f = Ackly.IOH_Ackley(configuration[-1], i_id)
+                f = custom[p_id](configuration[-1], i_id)
+                domain = f.get_init_range()
 
             f.add_logger(logger)
-            abc = ArtificialBeeColony(configuration[:-1])
+            abc = ArtificialBeeColony(configuration[:-1], domain)
             xopt, fopt = abc.optimize(f)
-            print(f'\tProblem: {p_id} dim: {configuration[-1]} iteration: {i_id}/{iterations} after: {f.evaluations}\n\t\tBest fitness: {fopt}')
+            print(f'\tProblem: {f.fname} dim: {configuration[-1]} iteration: {i_id}/{iterations} after: {f.evaluations}\n\t\tBest fitness: {fopt}')
         # print(f"Finished configuration {', '.join(map(str, configuration))}, problem: {p_id}, dim: {configuration[-1]} at:", time.time() - start)
     logger.clear_logger()
 
