@@ -20,13 +20,13 @@ class ArtificialBeeColony:
         solutions = np.array([self.scout_solution(problem) for _ in range(self.n_employed)])
         while not problem.final_target_hit and problem.evaluations < self.budget:
             # send employed bees (exploit existing solutions)
-            solutions = np.array([self.exploit(problem, solution, solutions) for solution in solutions])
+            solutions = np.array([self.exploit(problem, solution, i, solutions) for i, solution in enumerate(solutions)])
             # For every onlooker, pick a weighted random source
             onlooker_picks = np.array([self.pick_source_index(solutions) for _ in range(self.n_onlookers)])
             # Some indices will remain unchanged as these were appearantly not that interesting
             # Some will get multiple changes, which is why this has to be a synchronous process
             for i in onlooker_picks:
-                solutions[i] = self.exploit(problem, solutions[i], solutions)
+                solutions[i] = self.exploit(problem, solutions[i], i, solutions)
 
             for _ in range(self.n_scouts):
                 # Find the stalest solution in the space
@@ -55,7 +55,7 @@ class ArtificialBeeColony:
 
     # Exploit a solution and return it.
     # For new solution generation we use the existing list of solutions
-    def exploit(self, problem, solution, solutions):
+    def exploit(self, problem, solution, solution_i, solutions):
         # Create copy for array
         mutated_solution = solution.copy()
 
@@ -66,6 +66,9 @@ class ArtificialBeeColony:
         # vij = solution[j] + U(-1, 1)(solution[j] − solutions[k][j])
         mutate_j = np.random.randint(low=0, high=len(solution) - 2) # -2 because we don't want performance / staleness to be mutated
         mutate_k = np.random.randint(low=0, high=len(solutions)) # Random sample from existing mutations
+        while mutate_k == solution_i:
+            mutate_k = np.random.randint(low=0, high=len(solutions))
+
         mutation_factor = np.random.uniform(low=-1, high=1)
         mutation = solution[mutate_j] + mutation_factor * (solution[mutate_j] - solutions[mutate_k][mutate_j])
         # Make sure the new variable is between -5 and 5
