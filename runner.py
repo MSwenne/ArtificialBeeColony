@@ -19,6 +19,7 @@ def experiment(configuration):
 
     iterations = 30
     problem_id = [-1, -2, -3, -4, -5] # Griewank, Rastrigin, Rosenbrock, Ackley, Schwefel (as used in the paper)
+    problem_id = range(1, 25)
     instance_id = range(1, iterations + 1)
 
     logger = IOH_logger("./", f"result-{', '.join(map(str, configuration))}", f"abc-{', '.join(map(str, configuration))}", f"abc-{', '.join(map(str, configuration))}")
@@ -44,8 +45,8 @@ def experiment(configuration):
 if __name__ == '__main__':
     # Launch all configurations in parallel
 # Launch all configurations in parallel
-    iterations = [500, 750, 1000]
-    dimensions = [10, 20, 30]
+    iterations = [500, 750, 1000, 1000, 1500, 2000]
+    dimensions = [10, 20, 30, 10, 20, 30]
 
     population = 125
     n_scouts = 1
