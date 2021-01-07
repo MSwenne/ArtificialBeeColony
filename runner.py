@@ -18,7 +18,7 @@ def experiment(configuration):
     }
 
     iterations = 30
-    problem_id = [-1, -2, -3, -4, -5] # Griewank, Rastrigin, Rosenbrock, Ackley, Schwefel (as used in the paper)
+    # problem_id = [-1, -2, -3, -4, -5] # Griewank, Rastrigin, Rosenbrock, Ackley, Schwefel (as used in the paper)
     problem_id = range(1, 25)
     instance_id = range(1, iterations + 1)
 
