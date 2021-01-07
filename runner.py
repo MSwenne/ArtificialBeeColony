@@ -36,8 +36,12 @@ def experiment(configuration):
 
             f.add_logger(logger)
             abc = ArtificialBeeColony(configuration[:-1], domain)
-            xopt, fopt = abc.optimize(f)
-            print(f'\tProblem: {f.fname} dim: {configuration[-1]} iteration: {i_id}/{iterations} after: {f.evaluations}\n\t\tBest fitness: {fopt}')
+            try:
+                xopt, fopt = abc.optimize(f)
+            except:
+                pass
+            
+            print(f'\tProblem: {p_id} dim: {configuration[-1]} iteration: {i_id}/{iterations} after: {f.evaluations}\n\t\tBest fitness: {fopt}')
         # print(f"Finished configuration {', '.join(map(str, configuration))}, problem: {p_id}, dim: {configuration[-1]} at:", time.time() - start)
     logger.clear_logger()
 
@@ -60,3 +64,4 @@ if __name__ == '__main__':
     with Pool(cpu_count()) as p:
         p.map(experiment, configurations)
     print('Finished at:', time.time() - start)
+
